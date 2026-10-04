@@ -1,5 +1,6 @@
 # 免费金融建模工具（替代 Claude for Financial Services）
 
+> 本项目仓库：<https://github.com/gxygrenn/financial-modeling-free>（私有）
 > 来源仓库：<https://github.com/anthropics/financial-services>（Apache 2.0 协议，已保留版权）
 > 改造目标：**去掉对 Claude 运行时 + 付费金融终端的依赖，用免费数据源在本地直接跑通。**
 
@@ -88,9 +89,23 @@ python dcf_model.py AAPL --growth 12 10 9 8 7 --wacc 0.09 --terminal 0.03
 
 ---
 
-## 五、A股 / 港股怎么办
+## 五、A股 / 港股 / 美股真实数据怎么取
 
-本脚本用 yfinance，可覆盖美股、港股（`0700.HK`）。**A 股**则建议用 WorkBuddy 已内置的免费金融数据技能（行情、财报、资金流、估值等），把数据填进本脚本 `fetch_financials` 的返回值即可。
+**本机实测结论**：yfinance 连 Yahoo Finance 在本机被反爬（返回 `401 Invalid Crumb`），不可用。改用 **westock（腾讯自选股接口）** 取真实数据，A股/港股/美股都能查。
+
+脚本已内置 `--data FILE` 参数，支持把任意渠道取到的真实数据填成 JSON 直接跑：
+
+```bash
+# 1. 用 westock 拉真实财务数据（最近 4 季算 TTM），整理成 real_xxx_data.json
+# 2. 喂进脚本跑 DCF
+python dcf_model.py 605196 --data real_605196_data.json \
+    --growth 25 20 16 13 11 --rf 0.022 --erp 0.065 --tax 0.15 \
+    --beta 1.0 --cost-of-debt 0.035 --target-margin 0.08
+```
+
+- **A 股**：无风险利率 ~2.2%、股权风险溢价 ~6.5%、税率 15%，货币 `¥`
+- **美股**：无风险利率 ~4%、风险溢价 ~4.5%、税率 21%，货币 `$`
+- 已交付真实估值示例：微软 `real_msft_data.json`、华通线缆 `real_605196_data.json`
 
 ---
 
